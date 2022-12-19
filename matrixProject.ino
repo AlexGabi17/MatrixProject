@@ -25,6 +25,7 @@ bool menuScroll = 1;
 unsigned long lastMenuScrollChange = 0;
 void loop()
 {
+  // randomSeed(analogRead(A3));
   buttonCheck();
 
   short int movementPosition = getMovementPosition();

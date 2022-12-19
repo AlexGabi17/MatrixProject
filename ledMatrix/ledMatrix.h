@@ -14,9 +14,7 @@ byte matrixBrightness = 5;
 byte matrixGameLogic[matrixSize][matrixSize];
 unsigned long lastRefreshLedMatrix = 0;
 byte startGame = 0;
-byte foodPositionsX[] = {3, 2, 6, 7, 3, 4, 5, 3, 2, 1, 4, 5, 3, 4, 2, 1, 4, 5, 2, 3, 4, 5, 3, 2, 1, 3, 4, 5, 2, 2, 0, 2, 6, 7, 3, 1, 2, 5, 6, 2, 4, 6, 2, 4, 6, 2, 4, 6, 2, 6, 4, 2, 1, 5, 3, 2};
-byte foodPositionsY[] = {6, 5, 3, 6, 7, 2, 3, 2, 4, 5, 6, 3, 1, 3, 5, 6, 2, 3, 5, 2, 2, 4, 5, 4, 2, 4, 6, 2, 3, 6, 2, 3, 5, 6, 2, 2, 3, 4, 5, 6, 7, 2, 3, 4, 5, 2, 3, 2, 2, 0, 0, 2, 3, 5, 2, 2};
-byte indexPositions = 0;
+
 byte foodX;
 byte foodY;
 byte foodAte = 0;      // must be generated new food position
@@ -92,7 +90,7 @@ void ledMatrixSetup()
     lc.setIntensity(0, matrixBrightness); // sets brightness (0~15 possible values)
     lc.clearDisplay(0);                   // clear screen
 }
-byte verifySnakePositions(byte newFoodX, byte newFoodY)
+byte verifySnakePositions(byte posX, byte posY)
 {
     snakePosition *positions;
     positions = snakePositionsDeque.to_array();
@@ -100,13 +98,14 @@ byte verifySnakePositions(byte newFoodX, byte newFoodY)
     {
         // debug
         // Serial.println(index + ", X= " + String(positions[index].x) + ", Y= " + String(positions[index].y));
-        if (newFoodX == positions[index].x && newFoodY == positions[index].y)
+        if (posX == positions[index].x && posY == positions[index].y)
         {
             return 0;
         }
     }
     return 1;
 }
+
 void resetMatrix()
 {
     for (int row = 0; row < matrixSize; row++)
@@ -186,12 +185,10 @@ void updateSnake()
         while (!okFoodValues)
         {
             // randomSeed(newHead.x);
-            indexPositions %= 53;
             // newFoodX = foodPositionsX[indexPositions]; // generating pseudo-random values
             // newFoodY = foodPositionsY[indexPositions];
             newFoodX = random(1, 6);
             newFoodY = random(1, 6);
-            indexPositions += 1;
             if (verifySnakePositions(newFoodX, newFoodY)) // verify not to spawn food on the snake :)
             {
                 if (newFoodX != newHead.x && newFoodY != newHead.y)
@@ -215,7 +212,7 @@ void updateSnake()
     }
 
     // Serial.println("Food = " + String(foodX) + ", " + String(fo odY));
-    if (newHead.x < 0 || newHead.x > 7 || newHead.y < 0 || newHead.y > 7)
+    if ((newHead.x < 0 || newHead.x > 7 || newHead.y < 0 || newHead.y > 7) || (!verifySnakePositions(newHead.x, newHead.y)))
     {
         // move to LOST state of menu
         menuState = LOST;
