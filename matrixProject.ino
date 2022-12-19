@@ -6,7 +6,7 @@
 #include "data/data.h"
 #include "ledMatrix/ledMatrix.h"
 #include "deque/deque.h"
-
+long randNumber;
 void setup()
 {
   pinMode(ENTER_BUTTON_PIN, INPUT);
@@ -25,8 +25,6 @@ bool menuScroll = 1;
 unsigned long lastMenuScrollChange = 0;
 void loop()
 {
-  updateMatrix();
-
   buttonCheck();
 
   short int movementPosition = getMovementPosition();
@@ -41,6 +39,10 @@ void loop()
         lastMenuScrollChange = millis();
       }
     }
+  }
+  else if (menuState == GAMEPLAY)
+  {
+    updateMatrix();
   }
 
   // Menu State Switching

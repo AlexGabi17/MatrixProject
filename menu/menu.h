@@ -8,87 +8,104 @@
 
 //movement MATRIX for the menu
 unsigned long lastSwitch = 0;
-byte verifyMoveUp(){
-    if(menuMovementMatrix[menuState][1] != NO_ACTION){
+byte verifyMoveUp()
+{
+    if (menuMovementMatrix[menuState][1] != NO_ACTION)
+    {
         return true;
     }
     return false;
 }
 
-byte verifyMoveDown(){
-    if(menuMovementMatrix[menuState][0] != NO_ACTION){
+byte verifyMoveDown()
+{
+    if (menuMovementMatrix[menuState][0] != NO_ACTION)
+    {
         return true;
     }
     return false;
 }
 
-void menuStateSwitching(byte changebleValueJoystick, byte lastButtonState, short int joystickMovement, byte buttonState){
+void menuStateSwitching(byte changebleValueJoystick, byte lastButtonState, short int joystickMovement, byte buttonState)
+{
     short int result;
-    if(changebleValueJoystick){
-        if(joystickMovement != -1 && (joystickMovement == 0 || joystickMovement == 1))
+    if (changebleValueJoystick)
+    {
+        if (joystickMovement != -1 && (joystickMovement == 0 || joystickMovement == 1))
         {
             result = menuMovementMatrix[menuState][joystickMovement];
-            if (result != NO_ACTION){
+            if (result != NO_ACTION)
+            {
                 menuState = result;
                 lastSwitch = millis();
             }
-            
         }
     }
-    if(lastButtonState != buttonState){
-        if(buttonState == 1){
-            result = menuMovementMatrix[menuState][2];
-            // Serial.println(result);
-            if(result != NO_ACTION){
-                menuState = result;
-                lastSwitch = millis();
+    if (lastButtonState != buttonState)
+    {
+        if (buttonState == 1)
+        {
+            if (millis() - lastSwitch > MENU_PAUSE)
+            {
+                result = menuMovementMatrix[menuState][2];
+                // Serial.println(result);
+                if (result != NO_ACTION)
+                {
+                    menuState = result;
+                    lastSwitch = millis();
+                }
             }
-        }   
+        }
     }
-
 }
-short int menuChangeNameChars(short int joystickMovement, short int charIndex){
+short int menuChangeNameChars(short int joystickMovement, short int charIndex)
+{
     // RIGHT 3
     // LEFT 2
 
-        if(joystickMovement != -1)
+    if (joystickMovement != -1)
+    {
+        // Serial.println(joystickMovement);
+        if (joystickMovement == 1)
         {
-            // Serial.println(joystickMovement);
-            if(joystickMovement == 1){
-                Player.name[charIndex] --;
-            }
-            else if(joystickMovement == 0){
-                Player.name[charIndex] ++ ;
-            }
-            else if(joystickMovement == 2){
-                charIndex ++;
-            }
-            else if(joystickMovement == 3){
-                charIndex --;
-            }
-            
-
-            if(charIndex == -1){
-                charIndex = 2;
-            }
-            else if(charIndex == 3){
-                charIndex = 0;
-            }
-            lastSwitch = millis();
-            Serial.println(charIndex);
+            Player.name[charIndex]--;
         }
+        else if (joystickMovement == 0)
+        {
+            Player.name[charIndex]++;
+        }
+        else if (joystickMovement == 2)
+        {
+            charIndex++;
+        }
+        else if (joystickMovement == 3)
+        {
+            charIndex--;
+        }
+
+        if (charIndex == -1)
+        {
+            charIndex = 2;
+        }
+        else if (charIndex == 3)
+        {
+            charIndex = 0;
+        }
+        lastSwitch = millis();
+        Serial.println(charIndex);
+    }
 
     return charIndex;
 }
 
-
-char* getText(){
+char *getText()
+{
     switch (menuState)
     {
     case START_GAME:
         return "START GAME ";
         break;
-    
+
     case SETTINGS:
         return "SETTINGS ";
         break;
@@ -123,16 +140,16 @@ char* getText(){
 
     case LCD_CONTRAST:
         return "LCD_CONTRAST ";
-        break;   
+        break;
 
     case LCD_BRIGTHNESS:
         return "LCD BRIGTHNESS ";
-        break;  
+        break;
 
-     case MATRIX_BRIGHTNESS:
+    case MATRIX_BRIGHTNESS:
         return "MATRIX BRIGHT ";
-        break;  
-               
+        break;
+
     default:
         return "RESTART THE ARDUINO !! ";
         break;

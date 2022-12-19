@@ -2,8 +2,9 @@
 #define _LEDMATRIX_
 
 #include "../deque/deque.h"
+#include "../menu/init.h"
 
-short int refresh_time_matrix = 500; // should be change during the game
+short int refresh_time_matrix = 600; // should be change during the game
 const byte dinPin = 12;
 const byte clockPin = 11;
 const byte loadPin = 10;
@@ -13,10 +14,13 @@ byte matrixBrightness = 5;
 byte matrixGameLogic[matrixSize][matrixSize];
 unsigned long lastRefreshLedMatrix = 0;
 byte startGame = 0;
-
+byte foodPositionsX[] = {3, 2, 6, 7, 3, 4, 5, 3, 2, 1, 4, 5, 3, 4, 2, 1, 4, 5, 2, 3, 4, 5, 3, 2, 1, 3, 4, 5, 2, 2, 0, 2, 6, 7, 3, 1, 2, 5, 6, 2, 4, 6, 2, 4, 6, 2, 4, 6, 2, 6, 4, 2, 1, 5, 3, 2};
+byte foodPositionsY[] = {6, 5, 3, 6, 7, 2, 3, 2, 4, 5, 6, 3, 1, 3, 5, 6, 2, 3, 5, 2, 2, 4, 5, 4, 2, 4, 6, 2, 3, 6, 2, 3, 5, 6, 2, 2, 3, 4, 5, 6, 7, 2, 3, 4, 5, 2, 3, 2, 2, 0, 0, 2, 3, 5, 2, 2};
+byte indexPositions = 0;
 byte foodX;
 byte foodY;
-byte foodAte = 0; // must be generated new food position
+byte foodAte = 0;      // must be generated new food position
+byte increaseTail = 0; // set to False
 // Snake logic variables
 
 byte direction; // 0 -> UP, 1 -> DOWN, 2 -> LEFT, 3 -> RIGHT
@@ -31,6 +35,11 @@ void addHead(snakePosition head)
     matrixGameLogic[head.x][head.y] = 1;
     snakePositionsDeque.push_front(head);
 }
+addTail(snakePosition tail)
+{
+    matrixGameLogic[tail.x][tail.y] = 1;
+    snakePositionsDeque.push_back(tail);
+}
 void cutTail()
 {
     snakePosition position;
@@ -40,7 +49,7 @@ void cutTail()
 void releaseFood()
 {
     matrixGameLogic[foodX][foodY] = 1;
-    foodAte = 1;
+    // foodAte = 1;
 }
 void eatFood()
 {
@@ -98,7 +107,23 @@ byte verifySnakePositions(byte newFoodX, byte newFoodY)
     }
     return 1;
 }
-
+void resetMatrix()
+{
+    for (int row = 0; row < matrixSize; row++)
+    {
+        for (int col = 0; col < matrixSize; col++)
+        {
+            matrixGameLogic[row][col] = 0;
+        }
+    }
+}
+void clearSnakeMemory() // free memory used for snake position's for last game
+{
+    while (snakePositionsDeque.count())
+    {
+        snakePositionsDeque.pop_back();
+    }
+}
 void updateSnake()
 {
 
@@ -153,16 +178,26 @@ void updateSnake()
     // generate food
     byte okFoodValues = 0;
     byte newFoodX, newFoodY;
+    Serial.println("foodAte = " + String(foodAte));
+
     if (foodAte == 0)
     {
+        foodAte = 1;
         while (!okFoodValues)
         {
-            newFoodX = random(1, 6); // generating pseudo-random values
+            // randomSeed(newHead.x);
+            indexPositions %= 53;
+            // newFoodX = foodPositionsX[indexPositions]; // generating pseudo-random values
+            // newFoodY = foodPositionsY[indexPositions];
+            newFoodX = random(1, 6);
             newFoodY = random(1, 6);
+            indexPositions += 1;
             if (verifySnakePositions(newFoodX, newFoodY)) // verify not to spawn food on the snake :)
             {
                 if (newFoodX != newHead.x && newFoodY != newHead.y)
                 {
+                    // Serial.println(newFoodX, newFoodY);
+
                     okFoodValues = 1;
                 }
             }
@@ -170,17 +205,33 @@ void updateSnake()
         foodX = newFoodX;
         foodY = newFoodY;
     }
-    Serial.println("Food = " + String(foodX) + ", " + String(foodY));
+    if (newHead.x == foodX && newHead.y == foodY)
+    {
+        eatFood();
+        foodX = -1;
+        foodY = -1;
+        foodAte = 0;
+        increaseTail = 1;
+    }
+
+    // Serial.println("Food = " + String(foodX) + ", " + String(fo odY));
     if (newHead.x < 0 || newHead.x > 7 || newHead.y < 0 || newHead.y > 7)
     {
         // move to LOST state of menu
+        menuState = LOST;
+        lastSwitch = millis();
+        startGame = !startGame;
+        clearSnakeMemory();
     }
     else
     {
-
         releaseFood();
         addHead(newHead);
-        cutTail();
+        if (increaseTail == 0)
+        {
+            cutTail();
+        }
+        increaseTail = 0;
     }
 }
 void updateMatrix()
@@ -188,6 +239,8 @@ void updateMatrix()
 
     if (!startGame)
     {
+        resetMatrix();
+
         initSnake();
         delay(50); // give user the time to prepare for game
     }
