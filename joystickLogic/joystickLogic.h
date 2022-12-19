@@ -8,7 +8,7 @@
 
 #define CHANGE_TIME_VALUE 25
 
-const int pinX = A0; 
+const int pinX = A0;
 const int pinY = A1;
 const int pinSW = 2;
 int xValue = 0;
@@ -26,48 +26,60 @@ int lastMovementPosition = -1;
 
 // This var is needed not to allow the user to scroll infinetly without changing
 // the position of the joystick. After 1 scroll, the var is false
-byte changebleValueJoystick = 1; 
+byte changebleValueJoystick = 1;
 
-byte getChangebleValueJoystick(){
+byte getChangebleValueJoystick()
+{
   return changebleValueJoystick;
 }
-void verifyChangeJoystick(int movementPosition){
-  if(movementPosition != -1){
-    if(movementPosition!=lastMovementPosition){
+void verifyChangeJoystick(int movementPosition)
+{
+  if (movementPosition != -1)
+  {
+    if (movementPosition != lastMovementPosition)
+    {
       changebleValueJoystick = 1;
     }
-    else{
+    else
+    {
       changebleValueJoystick = 0;
     }
   }
   lastMovementPosition = movementPosition;
 }
 
-
-int getMovementPosition() {
+int getMovementPosition()
+{
   xValue = analogRead(pinX);
   yValue = analogRead(pinY);
   // Serial.println("xValue=" + String(xValue) + ", yValue=" + String(yValue));
-  if (millis() - lastDebounceTimeMovement > debounceTimeMovement) {
+  if (millis() - lastDebounceTimeMovement > debounceTimeMovement)
+  {
     lastDebounceTimeMovement = millis();
     lastDebounceValue = debounceValue;
-    if (xValue > maxHold && (yValue < maxHold && yValue > minHold)) {
+    if (xValue > maxHold && (yValue < maxHold && yValue > minHold))
+    {
       debounceValue = DOWN;
     }
-    else if (xValue < minHold && (yValue < maxHold && yValue > minHold)) {
+    else if (xValue < minHold && (yValue < maxHold && yValue > minHold))
+    {
       debounceValue = UP;
     }
-    else if (yValue > maxHold && (xValue < maxHold && xValue > minHold)) {
+    else if (yValue > maxHold && (xValue < maxHold && xValue > minHold))
+    {
       debounceValue = LEFT;
     }
-    else if (yValue < minHold && (xValue < maxHold && xValue > minHold)) {
+    else if (yValue < minHold && (xValue < maxHold && xValue > minHold))
+    {
       debounceValue = RIGHT;
     }
-    else {
+    else
+    {
       debounceValue = -1;
     }
   }
-  if (lastDebounceValue == debounceValue) {
+  if (lastDebounceValue == debounceValue)
+  {
     return debounceValue;
   }
   return -1;

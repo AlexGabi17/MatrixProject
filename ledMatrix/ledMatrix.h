@@ -14,6 +14,9 @@ byte matrixGameLogic[matrixSize][matrixSize];
 unsigned long lastRefreshLedMatrix = 0;
 byte startGame = 0;
 
+byte foodX;
+byte foodY;
+byte foodAte = 0; // must be generated new food position
 // Snake logic variables
 
 byte direction; // 0 -> UP, 1 -> DOWN, 2 -> LEFT, 3 -> RIGHT
@@ -34,7 +37,17 @@ void cutTail()
     position = snakePositionsDeque.pop_back();
     matrixGameLogic[position.x][position.y] = 0;
 }
-
+void releaseFood()
+{
+    matrixGameLogic[foodX][foodY] = 1;
+    foodAte = 1;
+}
+void eatFood()
+{
+    matrixGameLogic[foodX][foodY] = 0;
+    foodAte = 0;
+    // TODO increase snake's tail
+}
 void initSnake()
 {
     matrixGameLogic[5][2] = 1; // de aici incepe sarpili
@@ -53,7 +66,7 @@ void initSnake()
     startPos.x = 5;
     startPos.y = 2;
     snakePositionsDeque.push_front(startPos);
-    direction = 0;
+    direction = 1;
     startGame = 1;
 }
 void ledMatrixSetup()
@@ -70,14 +83,46 @@ void ledMatrixSetup()
     lc.setIntensity(0, matrixBrightness); // sets brightness (0~15 possible values)
     lc.clearDisplay(0);                   // clear screen
 }
+byte verifySnakePositions(byte newFoodX, byte newFoodY)
+{
+    snakePosition *positions;
+    positions = snakePositionsDeque.to_array();
+    for (int index = 0; index < snakePositionsDeque.count(); index++)
+    {
+        // debug
+        // Serial.println(index + ", X= " + String(positions[index].x) + ", Y= " + String(positions[index].y));
+        if (newFoodX == positions[index].x && newFoodY == positions[index].y)
+        {
+            return 0;
+        }
+    }
+    return 1;
+}
+
 void updateSnake()
 {
+
     short int movementPosition = getMovementPosition();
 
     if (movementPosition != -1)
     {
-        direction = movementPosition;
-        Serial.println(movementPosition);
+        if (direction == 1 && movementPosition != 0)
+        {
+            direction = movementPosition;
+        }
+        if (direction == 0 && movementPosition != 1)
+        {
+            direction = movementPosition;
+        }
+        if (direction == 2 && movementPosition != 3)
+        {
+            direction = movementPosition;
+        }
+        if (direction == 3 && movementPosition != 2)
+        {
+            direction = movementPosition;
+        }
+        // Serial.println(movementPosition);
     }
 
     snakePosition head = snakePositionsDeque.peek_front();
@@ -100,14 +145,40 @@ void updateSnake()
         newHead.x = head.x;
         newHead.y = head.y - 1;
         break;
+    default:
+        newHead.x = head.x + 1;
+        newHead.y = head.y;
     }
 
+    // generate food
+    byte okFoodValues = 0;
+    byte newFoodX, newFoodY;
+    if (foodAte == 0)
+    {
+        while (!okFoodValues)
+        {
+            newFoodX = random(1, 6); // generating pseudo-random values
+            newFoodY = random(1, 6);
+            if (verifySnakePositions(newFoodX, newFoodY)) // verify not to spawn food on the snake :)
+            {
+                if (newFoodX != newHead.x && newFoodY != newHead.y)
+                {
+                    okFoodValues = 1;
+                }
+            }
+        }
+        foodX = newFoodX;
+        foodY = newFoodY;
+    }
+    Serial.println("Food = " + String(foodX) + ", " + String(foodY));
     if (newHead.x < 0 || newHead.x > 7 || newHead.y < 0 || newHead.y > 7)
     {
         // move to LOST state of menu
     }
     else
     {
+
+        releaseFood();
         addHead(newHead);
         cutTail();
     }
