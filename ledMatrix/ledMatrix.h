@@ -3,8 +3,11 @@
 
 #include "../deque/deque.h"
 #include "../menu/init.h"
+#include "../data/data.h"
 
-short int refresh_time_matrix = 600; // should be change during the game
+#define REFRESH_TIME_MATRIX 600
+#define DIFFICULTY_STEP 5
+
 const byte dinPin = 12;
 const byte clockPin = 11;
 const byte loadPin = 10;
@@ -13,8 +16,9 @@ LedControl lc = LedControl(dinPin, clockPin, loadPin, 1); //DIN, CLK, LOAD, No.D
 byte matrixBrightness = 5;
 byte matrixGameLogic[matrixSize][matrixSize];
 unsigned long lastRefreshLedMatrix = 0;
+short int lastPlayerScore = 0;
 byte startGame = 0;
-
+byte difficulty = 0;
 byte foodX;
 byte foodY;
 byte foodAte = 0;      // must be generated new food position
@@ -57,6 +61,7 @@ void eatFood()
 }
 void initSnake()
 {
+    difficulty = 0;
     matrixGameLogic[5][2] = 1; // de aici incepe sarpili
     matrixGameLogic[6][2] = 1;
     matrixGameLogic[7][2] = 1;
@@ -122,6 +127,21 @@ void clearSnakeMemory() // free memory used for snake position's for last game
     {
         snakePositionsDeque.pop_back();
     }
+}
+void increaseDifficulty()
+{
+    if (difficulty <= 200)
+    {
+
+        if (snakePositionsDeque.count() >= DIFFICULTY_STEP)
+        {
+            difficulty += 25;
+        }
+    }
+}
+void updateScore()
+{
+    Player.score = snakePositionsDeque.count();
 }
 void updateSnake()
 {
@@ -209,12 +229,15 @@ void updateSnake()
         foodY = -1;
         foodAte = 0;
         increaseTail = 1;
+        increaseDifficulty();
     }
 
     // Serial.println("Food = " + String(foodX) + ", " + String(fo odY));
-    if ((newHead.x < 0 || newHead.x > 7 || newHead.y < 0 || newHead.y > 7) || (!verifySnakePositions(newHead.x, newHead.y)))
+    // || (!verifySnakePositions(newHead.x, newHead.y))
+    if ((newHead.x < 0 || newHead.x > 7 || newHead.y < 0 || newHead.y > 7))
     {
         // move to LOST state of menu
+        lastPlayerScore = Player.score;
         menuState = LOST;
         lastSwitch = millis();
         startGame = !startGame;
@@ -230,6 +253,7 @@ void updateSnake()
         }
         increaseTail = 0;
     }
+    updateScore();
 }
 void updateMatrix()
 {
@@ -242,7 +266,7 @@ void updateMatrix()
         delay(50); // give user the time to prepare for game
     }
 
-    if (millis() - lastRefreshLedMatrix >= refresh_time_matrix)
+    if (millis() - lastRefreshLedMatrix >= (REFRESH_TIME_MATRIX - difficulty))
     {
         updateSnake();
         for (int row = 0; row < matrixSize; row++)

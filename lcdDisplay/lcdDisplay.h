@@ -4,6 +4,7 @@
 #include "../data/data.h"
 #include "../menu/menu.h"
 #include "../joystickLogic/joystickLogic.h"
+#include "../ledMatrix/ledMatrix.h"
 short int charIndex = 0;
 void writeText(char *msg, bool menuScroll, byte verifyMoveUp, byte verifyMoveDown)
 {
@@ -34,9 +35,32 @@ void writeText(char *msg, bool menuScroll, byte verifyMoveUp, byte verifyMoveDow
     }
     else
     {
+      if (menuState == GAMEPLAY)
+      {
+        // Serial.println("suntem aici");
+        lcd.setCursor(1, 0);
+        lcd.print("Difficulty: ");
+        lcd.print(difficulty);
+        lcd.setCursor(1, 1);
+        lcd.print("Score: ");
+        lcd.print(Player.score);
+      }
+      if (menuState == LOST)
+      {
+        lcd.setCursor(1, 1);
+        lcd.print("Score: ");
+        lcd.print(lastPlayerScore);
+      }
+
       lcd.setCursor(0, 0);
-      lcd.print(msg);
-      lcd.write(byte(2));
+      // lcd.print(msg);
+
+      if (menuState != GAMEPLAY)
+      {
+        lcd.print(msg);
+
+        lcd.write(byte(2));
+      }
 
       if (verifyMoveUp)
       { // verify if menu can go up
