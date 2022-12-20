@@ -29,6 +29,7 @@ e.g. Score 5 => refresh_time = 600 - 0,
  Score 7 => refresh_time = 600 - 50 and so on until difficulty value hits 225.
  
 
+ This project uses an opensource c++ implementation of Deque:  **[Repository link](https://github.com/Zarfab/ArduinoDeque)**
  
   **[Link Video Gameplay](https://youtu.be/J5X2srdYE_4)** 
  
