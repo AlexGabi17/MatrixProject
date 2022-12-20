@@ -9,7 +9,7 @@ This is the final Matrix Game. I used a breadboard, a joystick and a button to d
  
  The refresh time of the LCD display is 250ms which means the refresh frequency rate is 4Hz.
  
- One move UP or DOWN of the joystick can iterate only to the next state, even if the user is holding it. The exception is made at username, you cand iterate trough all characters just by holding it UP or DOWN because it's faster to choose your name. In the first place I used one move one itaration for the username too but it was too slow. 
+ One move UP or DOWN of the joystick can iterate only to the next state, even if the user is holding it. The exception is made at username, you cand iterate trough all characters just by holding it UP or DOWN because it's faster to choose your name. In the first place I used one move one iteration for the username too but it was too slow. 
 
  **[Link Video 1](https://youtu.be/Jl3W35kquCA)**
 
